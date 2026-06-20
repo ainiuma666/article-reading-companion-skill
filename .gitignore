@@ -1,0 +1,21 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Runtime state
+cache/
+logs/
+reader_pages/
+processed.json
+current_article.md
+attention_override.md
+
+# Generated archives and local outputs
+outputs/
+.local/
+

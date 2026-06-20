@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>文章深度阅读</title>
+  <style>
+    :root {
+      --paper: #f5edde;
+      --paper-strong: #fffaf1;
+      --ink: #28231c;
+      --muted: #746858;
+      --quiet: #a5967f;
+      --line: #dfcfb7;
+      --line-strong: #c4ad8d;
+      --teal: #16736b;
+      --copper: #a9562b;
+      --warm-panel: #fff8ec;
+      --warm-line: #dcc7a9;
+      --right-bg: #f8efdf;
+      --shadow: 0 10px 28px rgba(78, 61, 36, .09);
+      --radius: 8px;
+      --header-h: 68px;
+      --font-ui: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+      --font-mono: "SF Mono", "Menlo", "Consolas", monospace;
+      --text-xs: 11px;
+      --text-sm: 13px;
+      --text-body: 15px;
+      --text-reading: 16px;
+      --text-title: 18px;
+      --text-section: 24px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #f2e6d2;
+      font-family: var(--font-ui);
+      overflow: hidden;
+    }
+
+    a { color: inherit; }
+
+    .app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: var(--header-h) auto minmax(0, 1fr);
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 20px;
+      padding: 10px 24px;
+      border-bottom: 1px solid rgba(41, 37, 31, .12);
+      background: #fff8ec;
+      z-index: 5;
+    }
+
+    .title-stack { min-width: 0; }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--copper);
+      font-size: var(--text-sm);
+      font-weight: 700;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--teal);
+      box-shadow: 0 0 0 4px rgba(27, 118, 111, .12);
+      flex: 0 0 auto;
+    }
+
+    .topbar h1 {
+      margin: 4px 0 0;
+      font-size: var(--text-title);
+      line-height: 1.25;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: 0;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .meter {
+      width: 178px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .meter span {
+      font-size: var(--text-xs);
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .track {
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(41, 37, 31, .12);
+      overflow: hidden;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--teal), var(--copper));
+      transition: width .18s ease;
+    }
+
+    .source-link {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      color: var(--ink);
+      background: rgba(255, 250, 241, .72);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .mobile-tabs { display: none; }
+
+    .reader-guide {
+      padding: 24px 32px 26px;
+      border-bottom: 1px solid rgba(41, 37, 31, .12);
+      background: #f1e4d1;
+    }
+
+    .guide-shell {
+      width: min(1280px, 100%);
+      margin: 0 auto;
+    }
+
+    .guide-title {
+      margin: 0 0 16px;
+      font-size: var(--text-section);
+      line-height: 1.2;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: 0;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .guide-item {
+      min-height: 124px;
+      padding: 17px 18px;
+      border: 1px solid var(--warm-line);
+      border-radius: var(--radius);
+      background: #fff8ec;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, .72) inset;
+    }
+
+    .guide-item h3 {
+      margin: 0 0 10px;
+      color: var(--copper);
+      font-size: var(--text-sm);
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .guide-item p {
+      margin: 0;
+      color: var(--ink);
+      font-size: var(--text-body);
+      line-height: 1.78;
+    }
+
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 0;
+    }
+
+    .source-pane,
+    .analysis-pane {
+      min-height: 0;
+      overflow: auto;
+      scroll-behavior: smooth;
+    }
+
+    .source-pane {
+      background: var(--paper);
+      border-right: 1px solid var(--line);
+    }
+
+    .article-shell {
+      width: min(760px, calc(100% - 56px));
+      margin: 0 auto;
+      padding: 22px 0 72px;
+    }
+
+    .article-block {
+      position: relative;
+      padding: 20px 22px 22px;
+      margin: 14px 0;
+      border: 1px solid var(--line);
+      border-left: 3px solid transparent;
+      border-radius: var(--radius);
+      background: rgba(255, 250, 241, .58);
+      cursor: pointer;
+      transition: background .16s ease, border-color .16s ease, box-shadow .16s ease;
+    }
+
+    .article-block:hover {
+      background: rgba(255, 250, 241, .7);
+      border-color: rgba(185, 170, 148, .55);
+    }
+
+    .article-block.active {
+      background: #fffaf1;
+      border-color: rgba(27, 118, 111, .28);
+      border-left-color: var(--teal);
+      box-shadow: var(--shadow);
+    }
+
+    .block-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .block-head small {
+      color: var(--copper);
+      font-weight: 700;
+      font-size: var(--text-xs);
+      flex: 0 0 auto;
+    }
+
+    .block-head h3,
+    .analysis-hero h2 {
+      margin: 0;
+      font-size: var(--text-title);
+      line-height: 1.35;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0;
+    }
+
+    .source-content {
+      color: #302a22;
+      font-size: var(--text-reading);
+      line-height: 1.82;
+    }
+
+    .source-content h3,
+    .source-content h4 {
+      margin: 28px 0 12px;
+      line-height: 1.42;
+      color: #241f19;
+      font-size: var(--text-reading);
+      font-weight: 700;
+    }
+
+    .source-content p { margin: 12px 0; }
+    .source-content strong { color: #16130f; }
+    .source-content code {
+      font-family: var(--font-mono);
+      font-size: .88em;
+      padding: 1px 5px;
+      border-radius: 5px;
+      background: rgba(41, 37, 31, .08);
+    }
+
+    .source-content pre {
+      overflow: auto;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #26221d;
+      color: #f7efe2;
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      line-height: 1.6;
+    }
+
+    .source-content blockquote {
+      margin: 14px 0;
+      padding: 10px 14px;
+      border-left: 3px solid var(--copper);
+      background: rgba(165, 83, 42, .08);
+      color: #5f493b;
+    }
+
+    .source-content ul,
+    .source-content ol {
+      margin: 10px 0 12px;
+      padding-left: 24px;
+    }
+
+    .source-content li { margin: 5px 0; }
+
+    .analysis-pane {
+      background: var(--right-bg);
+      color: var(--ink);
+    }
+
+    .analysis-shell {
+      min-height: 100%;
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr);
+    }
+
+    .block-nav {
+      padding: 22px 8px 28px;
+      border-right: 1px solid var(--warm-line);
+      background: #ead9bd;
+      position: sticky;
+      top: 0;
+      height: 100%;
+      overflow: auto;
+    }
+
+    .nav-label {
+      margin: 0 0 10px 4px;
+      color: var(--muted);
+      font-size: var(--text-xs);
+      font-weight: 700;
+    }
+
+    .nav-button {
+      width: 32px;
+      height: 32px;
+      min-height: 32px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 8px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      color: #6d5f4c;
+      background: transparent;
+      cursor: pointer;
+      font: inherit;
+      font-size: var(--text-sm);
+      font-weight: 700;
+      transition: background .16s ease, border-color .16s ease, color .16s ease;
+    }
+
+    .nav-button:hover {
+      background: rgba(255, 250, 241, .62);
+      border-color: rgba(165, 83, 42, .28);
+    }
+
+    .nav-button.active {
+      color: #fffaf1;
+      background: var(--copper);
+      border-color: var(--copper);
+    }
+
+    .nav-button.final {
+      width: 34px;
+      border-radius: 7px;
+      font-size: var(--text-xs);
+    }
+
+    .analysis-main {
+      min-width: 0;
+      width: min(760px, calc(100% - 56px));
+      margin: 0 auto;
+      padding: 28px 0 64px;
+    }
+
+    .analysis-hero {
+      padding: 18px 0 18px;
+      border-bottom: 1px solid var(--warm-line);
+      margin-bottom: 16px;
+    }
+
+    .analysis-hero p {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: var(--text-xs);
+      font-weight: 700;
+    }
+
+    .analysis-grid {
+      display: grid;
+      gap: 0;
+      border: 1px solid var(--warm-line);
+      border-radius: var(--radius);
+      background: rgba(255, 250, 241, .62);
+      overflow: hidden;
+    }
+
+    .analysis-card {
+      display: grid;
+      grid-template-columns: 116px minmax(0, 1fr);
+      gap: 18px;
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--warm-line);
+      background: transparent;
+    }
+
+    .analysis-card.featured {
+      background: rgba(255, 253, 248, .68);
+    }
+
+    .analysis-card:last-child { border-bottom: 0; }
+
+    .analysis-card h3 {
+      margin: 3px 0 0;
+      color: var(--copper);
+      font-size: var(--text-sm);
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .analysis-card p,
+    .analysis-card li,
+    .analysis-card td,
+    .analysis-card th {
+      color: var(--ink);
+      font-size: var(--text-body);
+      line-height: 1.72;
+    }
+
+    .analysis-card p { margin: 0; }
+    .analysis-card ul { margin: 0; padding-left: 19px; }
+    .analysis-card li { margin: 4px 0; }
+
+    .point-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .point-item {
+      padding: 10px 12px;
+      border: 1px solid rgba(220, 199, 169, .78);
+      border-radius: 7px;
+      background: rgba(255, 253, 248, .52);
+    }
+
+    .point-item p {
+      margin: 4px 0 0;
+    }
+
+    .point-item strong,
+    .synthesis-card strong {
+      color: #493527;
+    }
+
+    .kv-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .kv-table th {
+      width: 92px;
+      color: var(--copper);
+      text-align: left;
+      vertical-align: top;
+      font-weight: 700;
+      padding: 4px 10px 4px 0;
+    }
+
+    .kv-table td {
+      padding: 4px 0;
+      vertical-align: top;
+    }
+
+    .synthesis-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .synthesis-section-title {
+      margin: 18px 0 10px;
+      color: var(--copper);
+      font-size: var(--text-sm);
+      line-height: 1.35;
+      font-weight: 700;
+    }
+
+    .synthesis-section-title:first-child {
+      margin-top: 0;
+    }
+
+    .synthesis-card {
+      padding: 14px 16px;
+      border: 1px solid var(--warm-line);
+      border-radius: var(--radius);
+      background: rgba(255, 250, 241, .66);
+    }
+
+    .synthesis-card h3 {
+      margin: 0 0 9px;
+      font-size: var(--text-body);
+      line-height: 1.48;
+      color: var(--ink);
+    }
+
+    .synthesis-card dl {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 6px 12px;
+      margin: 0;
+    }
+
+    .synthesis-card dt {
+      color: var(--copper);
+      font-size: var(--text-sm);
+      font-weight: 700;
+    }
+
+    .synthesis-card dd {
+      margin: 0;
+      color: var(--ink);
+      font-size: var(--text-body);
+      line-height: 1.64;
+    }
+
+    @media (max-width: 980px) {
+      body { overflow: hidden; }
+      .app { grid-template-rows: auto auto minmax(0, 1fr); }
+      .topbar {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 12px 14px;
+      }
+      .topbar h1 {
+        white-space: normal;
+        font-size: var(--text-title);
+      }
+      .top-actions { justify-content: space-between; }
+      .meter { width: min(180px, 44vw); }
+      .mobile-tabs {
+        display: inline-flex;
+        padding: 3px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: rgba(255, 250, 241, .74);
+      }
+      .tab-button {
+        min-width: 58px;
+        min-height: 30px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted);
+        font: inherit;
+        font-size: var(--text-sm);
+        font-weight: 700;
+      }
+      .tab-button.active {
+        color: #fffaf1;
+        background: var(--copper);
+      }
+      .reader-guide {
+        padding: 14px;
+        overflow: hidden;
+      }
+      .guide-shell { overflow: hidden; }
+      .guide-title {
+        font-size: var(--text-section);
+        margin-bottom: 12px;
+      }
+      .guide-grid {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 3px;
+        align-items: flex-start;
+        width: 100%;
+        max-width: 100%;
+        overscroll-behavior-x: contain;
+      }
+      .guide-item {
+        flex: 0 0 calc(100vw - 56px);
+        max-width: calc(100vw - 56px);
+        min-height: auto;
+        padding: 14px 15px;
+      }
+      .workspace {
+        display: block;
+        min-height: 0;
+        height: 100%;
+      }
+      .source-pane,
+      .analysis-pane {
+        height: 100%;
+        width: 100%;
+        max-width: 100vw;
+        border-right: 0;
+        overflow-x: hidden;
+      }
+      .workspace.show-source .analysis-pane { display: none; }
+      .workspace.show-analysis .source-pane { display: none; }
+      .article-shell {
+        width: min(100% - 28px, 720px);
+        padding-top: 18px;
+      }
+      .analysis-shell {
+        grid-template-columns: minmax(0, 1fr);
+        min-width: 0;
+      }
+      .block-nav {
+        position: sticky;
+        top: 0;
+        height: auto;
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 10px 14px;
+        border-right: 0;
+        border-bottom: 1px solid var(--warm-line);
+        z-index: 2;
+      }
+      .nav-label { display: none; }
+      .nav-button,
+      .nav-button.final {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        min-height: 40px;
+        margin: 0;
+      }
+      .analysis-main {
+        padding: 18px 14px 48px;
+        min-width: 0;
+        max-width: 100vw;
+      }
+      .analysis-hero h2 {
+        font-size: var(--text-title);
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      .analysis-grid {
+        min-width: 0;
+        max-width: 100%;
+      }
+      .analysis-card {
+        grid-template-columns: 1fr;
+        gap: 7px;
+        padding: 14px 15px;
+        min-width: 0;
+      }
+      .analysis-card h3 { margin: 0; }
+      .analysis-card p,
+      .analysis-card li,
+      .synthesis-card dd,
+      .synthesis-card h3 {
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+      .synthesis-card dl {
+        grid-template-columns: 1fr;
+        gap: 3px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="title-stack">
+        <div class="label-row"><span class="dot"></span><span>文章深度阅读</span></div>
+        <h1 id="pageTitle"></h1>
+      </div>
+      <div class="top-actions">
+        <div class="mobile-tabs" aria-label="移动端视图切换">
+          <button class="tab-button active" data-view="source" type="button">原文</button>
+          <button class="tab-button" data-view="analysis" type="button">解读</button>
+        </div>
+        <div class="meter" aria-label="阅读进度">
+          <span><b>阅读进度</b><b id="progressText">0%</b></span>
+          <div class="track"><div id="progressBar" class="bar"></div></div>
+        </div>
+        <a id="sourceLink" class="source-link" href="#" target="_blank" rel="noopener">打开原文</a>
+      </div>
+    </header>
+
+    <section class="reader-guide" aria-label="全文导读">
+      <div class="guide-shell">
+        <h2 class="guide-title">全文导读</h2>
+        <div class="guide-grid">
+          <article class="guide-item">
+            <h3>解决什么问题</h3>
+            <p id="guideQuestion"></p>
+          </article>
+          <article class="guide-item">
+            <h3>一句话摘要</h3>
+            <p id="guideSummary"></p>
+          </article>
+          <article class="guide-item">
+            <h3>整体论证链</h3>
+            <p id="guideChain"></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <main id="workspace" class="workspace show-source">
+      <section id="sourcePane" class="source-pane" aria-label="公众号原文">
+        <article class="article-shell">
+          <div id="articleBlocks"></div>
+        </article>
+      </section>
+
+      <aside id="analysisPane" class="analysis-pane" aria-label="对应解读">
+        <div class="analysis-shell">
+          <nav id="blockNav" class="block-nav" aria-label="段落导航"></nav>
+          <section id="analysisMain" class="analysis-main"></section>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script id="reader-data" type="application/json">__READER_DATA_JSON__</script>
+  <script>
+    const data = JSON.parse(document.getElementById('reader-data').textContent);
+    document.title = `文章深度阅读｜${data.meta.title}`;
+    const blocksById = new Map(data.blocks.map(block => [block.id, block]));
+    const synthesisId = '__synthesis__';
+    let activeId = data.blocks[0].id;
+    let observerLock = false;
+
+    const pageTitle = document.getElementById('pageTitle');
+    const sourceLink = document.getElementById('sourceLink');
+    const guideQuestion = document.getElementById('guideQuestion');
+    const guideSummary = document.getElementById('guideSummary');
+    const guideChain = document.getElementById('guideChain');
+    const articleBlocks = document.getElementById('articleBlocks');
+    const blockNav = document.getElementById('blockNav');
+    const analysisMain = document.getElementById('analysisMain');
+    const sourcePane = document.getElementById('sourcePane');
+    const workspace = document.getElementById('workspace');
+    const progressBar = document.getElementById('progressBar');
+    const progressText = document.getElementById('progressText');
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function inlineMarkdown(value) {
+      let html = escapeHtml(value);
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      return html;
+    }
+
+    function renderMarkdown(md) {
+      const lines = String(md ?? '').split('\n');
+      const output = [];
+      let listType = null;
+      let inCode = false;
+      let codeBuffer = [];
+
+      function closeList() {
+        if (!listType) return;
+        output.push(`</${listType}>`);
+        listType = null;
+      }
+
+      for (const rawLine of lines) {
+        const line = rawLine.trimEnd();
+        const trimmed = line.trim();
+
+        if (trimmed.startsWith('```')) {
+          if (inCode) {
+            output.push(`<pre><code>${escapeHtml(codeBuffer.join('\n'))}</code></pre>`);
+            codeBuffer = [];
+            inCode = false;
+          } else {
+            closeList();
+            inCode = true;
+          }
+          continue;
+        }
+
+        if (inCode) {
+          codeBuffer.push(line);
+          continue;
+        }
+
+        if (!trimmed) {
+          closeList();
+          continue;
+        }
+
+        const heading = trimmed.match(/^(#{3,4})\s+(.+)$/);
+        if (heading) {
+          closeList();
+          const level = heading[1].length;
+          output.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+          continue;
+        }
+
+        if (trimmed.startsWith('> ')) {
+          closeList();
+          output.push(`<blockquote>${inlineMarkdown(trimmed.slice(2))}</blockquote>`);
+          continue;
+        }
+
+        const bullet = trimmed.match(/^-\s+(.+)$/);
+        if (bullet) {
+          if (listType !== 'ul') {
+            closeList();
+            listType = 'ul';
+            output.push('<ul>');
+          }
+          output.push(`<li>${inlineMarkdown(bullet[1])}</li>`);
+          continue;
+        }
+
+        const ordered = trimmed.match(/^\d+\.\s+(.+)$/);
+        if (ordered) {
+          if (listType !== 'ol') {
+            closeList();
+            listType = 'ol';
+            output.push('<ol>');
+          }
+          output.push(`<li>${inlineMarkdown(ordered[1])}</li>`);
+          continue;
+        }
+
+        closeList();
+        output.push(`<p>${inlineMarkdown(trimmed)}</p>`);
+      }
+
+      closeList();
+      return output.join('\n');
+    }
+
+    function renderObjectTable(value) {
+      return `<table class="kv-table"><tbody>${Object.entries(value).map(([key, item]) => `
+        <tr>
+          <th>${escapeHtml(key)}</th>
+          <td>${renderAnalysisValue(item)}</td>
+        </tr>
+      `).join('')}</tbody></table>`;
+    }
+
+    function renderArray(value) {
+      if (value.every(item => item && typeof item === 'object' && !Array.isArray(item))) {
+        return `<div class="point-list">${value.map(item => `
+          <div class="point-item">${Object.entries(item).map(([key, itemValue]) => `
+            <p><strong>${escapeHtml(key)}：</strong>${inlineMarkdown(itemValue)}</p>
+          `).join('')}</div>
+        `).join('')}</div>`;
+      }
+      return `<ul>${value.map(item => `<li>${inlineMarkdown(item)}</li>`).join('')}</ul>`;
+    }
+
+    function renderAnalysisValue(value) {
+      if (Array.isArray(value)) return renderArray(value);
+      if (value && typeof value === 'object') return renderObjectTable(value);
+      return `<p>${inlineMarkdown(value)}</p>`;
+    }
+
+    function renderStatic() {
+      pageTitle.textContent = data.meta.title;
+      sourceLink.href = data.meta.url;
+      guideQuestion.textContent = data.guide.question;
+      guideSummary.textContent = data.guide.summary;
+      guideChain.textContent = Array.isArray(data.guide.chain) ? data.guide.chain.join(' -> ') : data.guide.chain;
+
+      articleBlocks.innerHTML = data.blocks.map((block, index) => `
+        <section class="article-block" id="source-${block.id}" data-block-id="${block.id}" tabindex="0">
+          <div class="block-head">
+            <div>
+              <small>${escapeHtml(block.kicker || String(index + 1).padStart(2, '0'))}</small>
+              <h3>${escapeHtml(block.title)}</h3>
+            </div>
+          </div>
+          <div class="source-content">${renderMarkdown(block.source_markdown || block.source || '')}</div>
+        </section>
+      `).join('');
+
+      const synthesis = data.synthesis || {};
+      const synthesisItems = Array.isArray(synthesis.items) ? synthesis.items : [];
+      const synthesisInsights = Array.isArray(synthesis.insights) ? synthesis.insights : [];
+      const hasSynthesis = synthesisItems.length || synthesisInsights.length;
+      blockNav.innerHTML = `
+        <div class="nav-label">段落</div>
+        ${data.blocks.map((block, index) => `
+          <button class="nav-button" type="button" data-block-id="${block.id}" aria-label="跳到${escapeHtml(block.title)}">${index + 1}</button>
+        `).join('')}
+        ${hasSynthesis ? `<button class="nav-button final" type="button" data-block-id="${synthesisId}" aria-label="本文洞察与行动建议">洞察</button>` : ''}
+      `;
+    }
+
+    function blockEntries(block) {
+      const analysis = block.analysis || {};
+      const order = ['本块一句话', '主论点', '子论点', '事实核查 / 可信度', '信息缺口 / 反例'];
+      const entries = [];
+      for (const label of order) {
+        if (analysis[label] !== undefined) entries.push([label, analysis[label]]);
+      }
+      for (const [label, value] of Object.entries(analysis)) {
+        if (!order.includes(label)) {
+          entries.push([label, value]);
+        }
+      }
+      return entries;
+    }
+
+    function renderAnalysis(block) {
+      const entries = blockEntries(block);
+      analysisMain.innerHTML = `
+        <header class="analysis-hero">
+          <p>${escapeHtml(block.position)}</p>
+          <h2>${escapeHtml(block.title)}</h2>
+        </header>
+        <div class="analysis-grid">
+          ${entries.map(([label, value], index) => `
+            <section class="analysis-card ${index === 0 ? 'featured' : ''}">
+              <h3>${escapeHtml(label)}</h3>
+              ${renderAnalysisValue(value)}
+            </section>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderSynthesis() {
+      const synthesis = data.synthesis || { title: '本文洞察与行动建议', insights: [], items: [] };
+      const insights = Array.isArray(synthesis.insights) ? synthesis.insights : [];
+      const items = Array.isArray(synthesis.items) ? synthesis.items : [];
+      analysisMain.innerHTML = `
+        <header class="analysis-hero">
+          <p>全文级综合，不自动写入知识库</p>
+          <h2>${escapeHtml(synthesis.title || '本文洞察与行动建议')}</h2>
+        </header>
+        <div class="synthesis-list">
+          <div class="synthesis-section-title">本文洞察</div>
+          ${insights.map((item, index) => `
+            <article class="synthesis-card">
+              <h3>${index + 1}. ${escapeHtml(item['洞察'] || item.title || '洞察')}</h3>
+              <dl>
+                <dt>对应原文块</dt><dd>${inlineMarkdown(item['对应原文块'] || '')}</dd>
+                <dt>为什么重要</dt><dd>${inlineMarkdown(item['为什么对我重要'] || '')}</dd>
+                <dt>反例边界</dt><dd>${inlineMarkdown(item['可能反例或边界'] || item['可能反例'] || '')}</dd>
+              </dl>
+            </article>
+          `).join('') || '<p>本篇暂无足够强的全文洞察。</p>'}
+          <div class="synthesis-section-title">行动与沉淀建议</div>
+          ${items.map((item, index) => `
+            <article class="synthesis-card">
+              <h3>${index + 1}. ${escapeHtml(item['建议'] || item.title || '建议')}</h3>
+              <dl>
+                <dt>对应洞察</dt><dd>${inlineMarkdown(item['对应洞察'] || item['对应原文块'] || '')}</dd>
+                <dt>建议去向</dt><dd>${inlineMarkdown(item['建议去向'] || '')}</dd>
+                <dt>后续动作</dt><dd>${inlineMarkdown(item['后续动作'] || '')}</dd>
+                <dt>优先级</dt><dd>${inlineMarkdown(item['优先级'] || '')}</dd>
+              </dl>
+            </article>
+          `).join('') || '<p>本篇暂无值得行动或沉淀的建议。</p>'}
+        </div>
+      `;
+    }
+
+    function activate(blockId, options = {}) {
+      if (blockId === synthesisId) {
+        activeId = blockId;
+        document.querySelectorAll('.article-block').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-button').forEach(el => el.classList.toggle('active', el.dataset.blockId === blockId));
+        renderSynthesis();
+        return;
+      }
+
+      const block = blocksById.get(blockId);
+      if (!block) return;
+      activeId = blockId;
+      document.querySelectorAll('.article-block').forEach(el => el.classList.toggle('active', el.dataset.blockId === blockId));
+      document.querySelectorAll('.nav-button').forEach(el => el.classList.toggle('active', el.dataset.blockId === blockId));
+      renderAnalysis(block);
+
+      if (options.scrollSource) {
+        observerLock = true;
+        document.getElementById(`source-${blockId}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.setTimeout(() => { observerLock = false; }, 650);
+      }
+    }
+
+    function updateProgress() {
+      const max = sourcePane.scrollHeight - sourcePane.clientHeight;
+      const pct = max <= 0 ? 0 : Math.min(100, Math.max(0, Math.round((sourcePane.scrollTop / max) * 100)));
+      progressBar.style.width = pct + '%';
+      progressText.textContent = pct + '%';
+    }
+
+    function wireEvents() {
+      articleBlocks.addEventListener('click', event => {
+        const block = event.target.closest('.article-block');
+        if (block) activate(block.dataset.blockId);
+      });
+
+      articleBlocks.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const block = event.target.closest('.article-block');
+        if (block) {
+          event.preventDefault();
+          activate(block.dataset.blockId);
+        }
+      });
+
+      blockNav.addEventListener('click', event => {
+        const button = event.target.closest('.nav-button');
+        if (!button) return;
+        activate(button.dataset.blockId, { scrollSource: button.dataset.blockId !== synthesisId });
+      });
+
+      sourcePane.addEventListener('scroll', updateProgress, { passive: true });
+
+      const observer = new IntersectionObserver(entries => {
+        if (observerLock || activeId === synthesisId) return;
+        const visible = entries
+          .filter(entry => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) activate(visible.target.dataset.blockId);
+      }, { root: sourcePane, threshold: [0.2, 0.35, 0.5], rootMargin: '-8% 0px -62% 0px' });
+
+      document.querySelectorAll('.article-block').forEach(block => observer.observe(block));
+
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.tab-button').forEach(item => item.classList.toggle('active', item === button));
+          workspace.classList.toggle('show-source', button.dataset.view === 'source');
+          workspace.classList.toggle('show-analysis', button.dataset.view === 'analysis');
+        });
+      });
+    }
+
+    renderStatic();
+    activate(activeId);
+    wireEvents();
+    updateProgress();
+  </script>
+</body>
+</html>

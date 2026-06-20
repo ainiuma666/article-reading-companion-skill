@@ -1,0 +1,26 @@
+# Example only. Adjust this file to match your Codex automation environment.
+
+name = "Daily Article Reading Companion"
+enabled = true
+model = "gpt-5.5"
+reasoning_effort = "xhigh"
+
+cwd = "/absolute/path/to/article-reading-companion-skill/article-reading-companion"
+
+prompt = """
+Use $article-reading-companion.
+
+Run the article deep-reading workflow:
+
+1. Read references/summary_methodology.md.
+2. Run ./scripts/run_daily.sh prepare.
+3. If prepare fails, report the failure briefly and do not generate files.
+4. Read the fetched article Markdown from prepare.article_markdown_path.
+5. Generate a deep-reading Markdown note using the methodology.
+6. Generate cache/current_reader_payload.json with the required companion-page JSON structure.
+7. Run ./scripts/run_daily.sh render --payload cache/current_reader_payload.json.
+8. Only after the note and page are generated successfully, run ./scripts/run_daily.sh commit.
+
+Do not expose API keys, client IDs, IMA internal IDs, local credential files, or temp article paths.
+Do not automatically write to any private knowledge base unless the user explicitly configures an output path.
+"""

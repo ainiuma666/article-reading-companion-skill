@@ -1,0 +1,75 @@
+{
+  "meta": {
+    "title": "Example: Turning AI Into a Repeatable Workflow",
+    "source": "Synthetic Example",
+    "url": "https://example.com/article"
+  },
+  "guide": {
+    "question": "How can a team make AI output more stable across repeated work?",
+    "summary": "The article argues that AI adoption becomes useful only when prompts, checks, tools, and review loops are turned into a repeatable operating system.",
+    "chain": ["AI output is unstable", "teams need reusable workflow standards", "examples reveal missing checks", "evaluation and feedback loops improve reliability", "workflow design matters more than one-off prompting"]
+  },
+  "blocks": [
+    {
+      "id": "b1",
+      "title": "The Problem Is Unstable Delivery",
+      "position": "Opening section",
+      "source_markdown": "The author starts from a common team problem: AI can produce impressive one-off answers, but repeated delivery is still uneven. The gap is not only model capability; it is the lack of shared standards for context, tools, review, and acceptance.",
+      "analysis": {
+        "本块一句话": "The opening defines the real problem as unstable repeated delivery, not whether the model can produce one impressive answer.",
+        "主论点": "AI becomes operationally valuable only when teams can make repeated outputs stable.",
+        "子论点": [
+          {
+            "论点": "One-off output quality is a weak adoption metric.",
+            "依据": "The author contrasts impressive demos with uneven repeated delivery.",
+            "解释": "A team cannot rely on AI operationally if quality depends on luck or individual prompting habits.",
+            "证明强度": "medium"
+          }
+        ],
+        "事实核查 / 可信度": "This is primarily an operational claim, not a factual claim. It is credible but should be validated against the team's own delivery data.",
+        "信息缺口 / 反例": "The article does not provide quantitative before/after failure rates. For exploratory tasks, one-off creativity may still be enough."
+      }
+    },
+    {
+      "id": "b2",
+      "title": "Workflow Standards Raise the Floor",
+      "position": "Middle section",
+      "source_markdown": "The author then proposes converting repeated tasks into documented workflows: required context, tool calls, review gates, examples, and feedback loops. The point is not to limit AI, but to make baseline delivery reliable.",
+      "analysis": {
+        "本块一句话": "The method is to turn repeated work into a documented workflow with inputs, checks, examples, and review gates.",
+        "主论点": "Reusable workflow standards raise the minimum quality of AI-assisted work.",
+        "子论点": [
+          {
+            "论点": "Review gates prevent silent quality drift.",
+            "依据": "The author lists review gates as a required part of the workflow.",
+            "解释": "Without acceptance checks, failures may look fluent and pass unnoticed.",
+            "证明强度": "medium"
+          }
+        ],
+        "事实核查 / 可信度": "No external factual claim requires verification in this block.",
+        "信息缺口 / 反例": "The article does not define how to measure whether a gate is effective. Overly rigid workflows may slow down novel work."
+      }
+    }
+  ],
+  "synthesis": {
+    "title": "Synthesis and Action Suggestions",
+    "insights": [
+      {
+        "洞察": "The useful unit of AI adoption is not a prompt, but a repeatable workflow with review gates.",
+        "对应原文块": "The Problem Is Unstable Delivery; Workflow Standards Raise the Floor",
+        "为什么对我重要": "This shifts the implementation question from writing better prompts to designing reusable delivery systems.",
+        "可能反例或边界": "For early exploration, rigid workflow design can be premature."
+      }
+    ],
+    "items": [
+      {
+        "建议": "Pick one repeated task and define its input checklist, tool steps, acceptance gate, and feedback loop.",
+        "对应洞察": "The useful unit of AI adoption is a repeatable workflow.",
+        "建议去向": "project candidate",
+        "后续动作": "Run the workflow on three real cases and record where quality fails.",
+        "优先级": "high"
+      }
+    ]
+  }
+}
+
