@@ -1,9 +1,9 @@
 ---
 name: article-reading-companion
-description: Run or maintain an article companion-reading workflow that selects saved WeChat articles, fetches article Markdown, and generates structured notes and two-column companion HTML pages. Use when the user asks for 文章伴读助手, article deep reading, companion reading, IMA-sourced WeChat article processing, or workflow maintenance.
+description: Run or maintain an article companion-reading workflow that selects saved WeChat articles, fetches article Markdown, and generates structured notes and two-column companion HTML pages. Use when the user asks for 文章陪读助手, article deep reading, companion reading, IMA-sourced WeChat article processing, or workflow maintenance.
 ---
 
-# 文章伴读助手
+# 文章陪读助手
 
 Use this skill when the user wants to:
 

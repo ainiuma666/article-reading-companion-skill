@@ -1,4 +1,4 @@
-# 文章伴读助手
+# 文章陪读助手
 
 An open-source Codex skill for turning saved WeChat articles into a companion-reading experience.
 

@@ -845,7 +845,7 @@ def render_reader(args: argparse.Namespace) -> None:
     else:
         READER_PAGES.mkdir(parents=True, exist_ok=True)
         today = datetime.now().strftime("%Y%m%d")
-        name = safe_filename(f"{today}-{data['meta']['title']}-伴读", max_len=150)
+        name = safe_filename(f"{today}-{data['meta']['title']}-陪读", max_len=150)
         output_path = unique_path(READER_PAGES / f"{name}.html")
 
     template = READER_TEMPLATE_PATH.read_text(encoding="utf-8")

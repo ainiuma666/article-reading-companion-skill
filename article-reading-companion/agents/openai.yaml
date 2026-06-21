@@ -1,4 +1,4 @@
 interface:
-  display_name: "文章伴读助手"
-  short_description: "选取保存文章并生成双栏伴读笔记"
+  display_name: "文章陪读助手"
+  short_description: "选取保存文章并生成双栏陪读笔记"
   default_prompt: "Use $article-reading-companion to run the article companion-reading workflow."
